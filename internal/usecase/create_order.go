@@ -13,12 +13,12 @@ func (l *Loms) CreateOrder(ctx context.Context, input dto.CreateOrderInput) (dto
 	items := l.aggregateItems(input.Items)
 	skuIDs := make([]uint32, 0, len(input.Items))
 	for _, item := range items {
-		skuIDs = append(skuIDs, item.SkuID)
+		skuIDs = append(skuIDs, item.Sku)
 	}
 
 	order := domain.Order{
 		Status: domain.StatusNew,
-		UserID: input.UserID,
+		User:   input.User,
 		Items:  items,
 	}
 
