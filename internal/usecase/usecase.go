@@ -12,11 +12,12 @@ import (
 
 type OrderStorage interface {
 	Create(ctx context.Context, order domain.Order) (domain.Order, error)
-	GetByID(ctx context.Context, orderID int64) (domain.Order, error)
+	GetByID(ctx context.Context, orderID int) (domain.Order, error)
 	Save(ctx context.Context, order domain.Order) error
 }
 type StockStorage interface {
 	GetBySkuIDs(ctx context.Context, skus []uint32) ([]domain.Stock, error)
+	GetBySkuID(ctx context.Context, skus uint32) (domain.Stock, error)
 	Save(ctx context.Context, stock domain.Stock) error
 }
 
@@ -40,18 +41,14 @@ func (l *Loms) reserveStocks(
 	}
 
 	for _, item := range items {
-		stock, ok := stockMap[item.SkuID]
+		stock, ok := stockMap[item.Sku]
 		if !ok {
-			return fmt.Errorf("id %d: %w", item.SkuID, domain.ErrSkuNotFound)
+			return fmt.Errorf("id %d: %w", item.Sku, domain.ErrSkuNotFound)
 		}
 		if stock.TotalCount-stock.Reserved < uint64(item.Count) {
 			return domain.ErrInsufficientStock
 		}
 		stock.Reserved += uint64(item.Count)
-		stockMap[item.SkuID] = stock
-	}
-
-	for _, stock := range stockMap {
 		if err := l.stockStorage.Save(ctx, stock); err != nil {
 			return fmt.Errorf("stockStorage.Save: %w", err)
 		}
@@ -64,13 +61,13 @@ func (l *Loms) aggregateItems(items []dto.OrderItem) []domain.OrderItem {
 	m := make(map[uint32]uint16, len(items))
 
 	for _, it := range items {
-		m[it.SkuID] += it.Count
+		m[it.Sku] += it.Count
 	}
 
 	res := make([]domain.OrderItem, 0, len(m))
 	for sku, cnt := range m {
 		res = append(res, domain.OrderItem{
-			SkuID: sku,
+			Sku:   sku,
 			Count: cnt,
 		})
 	}

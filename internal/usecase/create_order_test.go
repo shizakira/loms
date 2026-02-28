@@ -23,14 +23,14 @@ func TestMain(m *testing.M) {
 func TestLoms_CreateOrder_Success(t *testing.T) {
 	ctx := context.Background()
 	input := dto.CreateOrderInput{
-		UserID: 1,
+		User: 1,
 		Items: []dto.OrderItem{
-			{SkuID: 1, Count: 1},
-			{SkuID: 1, Count: 1},
+			{Sku: 1, Count: 1},
+			{Sku: 1, Count: 1},
 		},
 	}
 
-	createdOrder := domain.Order{ID: 42, Status: domain.StatusNew, UserID: input.UserID}
+	createdOrder := domain.Order{ID: 42, Status: domain.StatusNew, User: input.User}
 
 	orderStorage := &mocks.OrderStorage{}
 	orderStorage.On("Create", ctx, mock.Anything).Return(createdOrder, nil).Once()
@@ -53,8 +53,8 @@ func TestLoms_CreateOrder_Success(t *testing.T) {
 func TestLoms_CreateOrder_ReturnsErrorWhenCreateFails(t *testing.T) {
 	ctx := context.Background()
 	input := dto.CreateOrderInput{
-		UserID: 1,
-		Items:  []dto.OrderItem{{SkuID: 1, Count: 1}},
+		User:  1,
+		Items: []dto.OrderItem{{Sku: 1, Count: 1}},
 	}
 
 	orderStorage := &mocks.OrderStorage{}
@@ -73,11 +73,11 @@ func TestLoms_CreateOrder_ReturnsErrorWhenCreateFails(t *testing.T) {
 func TestLoms_CreateOrder_ReturnsErrorWhenInsufficientStock(t *testing.T) {
 	ctx := context.Background()
 	input := dto.CreateOrderInput{
-		UserID: 1,
-		Items:  []dto.OrderItem{{SkuID: 1, Count: 10}},
+		User:  1,
+		Items: []dto.OrderItem{{Sku: 1, Count: 10}},
 	}
 
-	createdOrder := domain.Order{ID: 42, Status: domain.StatusNew, UserID: input.UserID}
+	createdOrder := domain.Order{ID: 42, Status: domain.StatusNew, User: input.User}
 
 	orderStorage := &mocks.OrderStorage{}
 	orderStorage.On("Create", ctx, mock.Anything).Return(createdOrder, nil).Once()
