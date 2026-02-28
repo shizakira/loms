@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package loms.v1;
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/shizakira/loms/gen/grpc/loms_v1";
+
+service Loms {
+  rpc OrderCreate(OrderCreateRequest) returns (OrderCreateResponse) {
+    option (google.api.http) = {
+      post: "/v1/orders"
+      body: "*"
+    };
+  }
+
+  rpc OrderInfo(OrderInfoRequest) returns (OrderInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/orders/{order_id}"
+    };
+  }
+
+  rpc OrderPay(OrderPayRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/orders/{order_id}/pay"
+      body: "*"
+    };
+  }
+
+  rpc OrderCancel(OrderCancelRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/orders/{order_id}/cancel"
+      body: "*"
+    };
+  }
+
+  rpc StocksInfo(StocksInfoRequest) returns (StocksInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/stocks/{sku}"
+    };
+  }
+}
+
+message Item {
+  uint32 sku   = 1 [(buf.validate.field).uint32.gt = 0];
+  uint32 count = 2 [(buf.validate.field).uint32.gt = 0];
+}
+
+message OrderCreateRequest {
+  int64         user  = 1 [(buf.validate.field).int64.gt = 0];
+  repeated Item items = 2 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message OrderCreateResponse {
+  int64 order_id = 1;
+}
+
+message OrderInfoRequest {
+  int64 order_id = 1 [(buf.validate.field).int64.gt = 0];
+}
+
+message OrderInfoResponse {
+  string        status = 1;
+  int64         user   = 2;
+  repeated Item items  = 3;
+}
+
+message OrderPayRequest {
+  int64 order_id = 1 [(buf.validate.field).int64.gt = 0];
+}
+
+message OrderCancelRequest {
+  int64 order_id = 1 [(buf.validate.field).int64.gt = 0];
+}
+
+message StocksInfoRequest {
+  uint32 sku = 1 [(buf.validate.field).uint32.gt = 0];
+}
+
+message StocksInfoResponse {
+  uint64 count = 1;
+}
