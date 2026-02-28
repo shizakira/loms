@@ -1,6 +1,19 @@
 package domain
 
-import "errors"
+import "google.golang.org/grpc/codes"
 
-var ErrInsufficientStock = errors.New("insufficient stock for reservation")
-var ErrSkuNotFound = errors.New("sku not found")
+type Error struct {
+	GRPCCode codes.Code
+	Message  string
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
+var (
+	ErrSkuNotFound        = &Error{GRPCCode: codes.NotFound, Message: "sku not found"}
+	ErrOrderNotFound      = &Error{GRPCCode: codes.NotFound, Message: "order not found"}
+	ErrInsufficientStock  = &Error{GRPCCode: codes.FailedPrecondition, Message: "insufficient stock"}
+	ErrInvalidOrderStatus = &Error{GRPCCode: codes.FailedPrecondition, Message: "invalid order status"}
+)
