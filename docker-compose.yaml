@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    ports:
+      - "50051:50051"
+      - "8080:8080"
+
+  postgres:
+    container_name: loms_postgres
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - loms_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  loms_postgres_data:
