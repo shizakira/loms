@@ -1,0 +1,19 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/adapter/postgres/order/queries.sql"
+    schema: "internal/adapter/postgres/order/schema.sql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/adapter/postgres/order/sqlc"
+        sql_package: "pgx/v5"
+
+  - engine: "postgresql"
+    queries: "internal/adapter/postgres/stock/queries.sql"
+    schema: "internal/adapter/postgres/stock/schema.sql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/adapter/postgres/stock/sqlc"
+        sql_package: "pgx/v5"
