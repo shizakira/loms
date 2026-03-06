@@ -1,14 +1,20 @@
 -- name: CreateOrder :one
 INSERT INTO orders (status, user_id)
 VALUES (@status, @user_id)
-    RETURNING id, status, user_id;
+    RETURNING id;
 
 -- name: GetOrderByID :one
 SELECT id, status, user_id
 FROM orders
 WHERE id = @id;
 
--- name: SaveOrder :exec
+-- name: GetOrderByIDForUpdate :one
+SELECT id, status, user_id
+FROM orders
+WHERE id = @id
+FOR NO KEY UPDATE;
+
+-- name: UpdateOrderStatus :exec
 UPDATE orders
 SET status = @status
 WHERE id = @id;

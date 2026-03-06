@@ -17,15 +17,16 @@ CREATE TABLE order_items
 (
     order_id BIGINT   NOT NULL REFERENCES orders (id),
     sku      BIGINT   NOT NULL,
-    count    SMALLINT NOT NULL,
+    count    SMALLINT NOT NULL CHECK ( count > 0),
     PRIMARY KEY (order_id, sku)
 );
 
 CREATE TABLE stocks
 (
     sku_id      BIGINT NOT NULL PRIMARY KEY,
-    total_count BIGINT NOT NULL DEFAULT 0,
-    reserved    BIGINT NOT NULL DEFAULT 0
+    total_count BIGINT NOT NULL DEFAULT 0 CHECK ( total_count >= 0 ),
+    reserved    BIGINT NOT NULL DEFAULT 0 CHECK ( reserved >= 0 )
+        CHECK ( reserved <= total_count )
 );
 
 INSERT INTO stocks (sku_id, total_count, reserved)

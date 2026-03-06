@@ -20,7 +20,7 @@ func (h Handlers) OrderInfo(ctx context.Context, req *pb.OrderInfoRequest) (*pb.
 	items := make([]*pb.Item, 0, len(order.Items))
 	for _, item := range order.Items {
 		items = append(items, &pb.Item{
-			Sku:   item.Sku,
+			Sku:   uint32(item.Sku),
 			Count: uint32(item.Count),
 		})
 	}

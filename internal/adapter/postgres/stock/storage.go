@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/shizakira/loms/internal/adapter/postgres/stock/sqlc"
 	"github.com/shizakira/loms/internal/domain"
 	"github.com/shizakira/loms/pkg/transaction"
@@ -23,7 +24,7 @@ func (s *Storage) query(ctx context.Context) *sqlc.Queries {
 	return sqlc.New(db)
 }
 
-func (s *Storage) GetBySkuID(ctx context.Context, sku uint32) (domain.Stock, error) {
+func (s *Storage) GetBySkuID(ctx context.Context, sku int) (domain.Stock, error) {
 	q := s.query(ctx)
 
 	row, err := q.GetStockBySku(ctx, int64(sku))
@@ -35,47 +36,70 @@ func (s *Storage) GetBySkuID(ctx context.Context, sku uint32) (domain.Stock, err
 	}
 
 	return domain.Stock{
-		SkuID:      uint32(row.SkuID),
-		TotalCount: uint64(row.TotalCount),
-		Reserved:   uint64(row.Reserved),
+		SkuID:      int(row.SkuID),
+		TotalCount: int(row.TotalCount),
+		Reserved:   int(row.Reserved),
 	}, nil
 }
 
-func (s *Storage) GetBySkuIDs(ctx context.Context, skus []uint32) ([]domain.Stock, error) {
+func (s *Storage) DecreaseReserved(ctx context.Context, skuID int, count int) error {
 	q := s.query(ctx)
 
-	skuIDs := make([]int64, 0, len(skus))
-	for _, sku := range skus {
-		skuIDs = append(skuIDs, int64(sku))
-	}
-
-	rows, err := q.GetStocksBySkus(ctx, skuIDs)
-	if err != nil {
-		return nil, fmt.Errorf("q.GetStocksBySkus: %w", err)
-	}
-
-	stocks := make([]domain.Stock, 0, len(rows))
-	for _, row := range rows {
-		stocks = append(stocks, domain.Stock{
-			SkuID:      uint32(row.SkuID),
-			TotalCount: uint64(row.TotalCount),
-			Reserved:   uint64(row.Reserved),
-		})
-	}
-
-	return stocks, nil
-}
-
-func (s *Storage) Save(ctx context.Context, stock domain.Stock) error {
-	q := s.query(ctx)
-
-	err := q.SaveStock(ctx, sqlc.SaveStockParams{
-		SkuID:      int64(stock.SkuID),
-		TotalCount: int64(stock.TotalCount),
-		Reserved:   int64(stock.Reserved),
+	err := q.DecreaseReservedStock(ctx, sqlc.DecreaseReservedStockParams{
+		SkuID: int64(skuID),
+		Count: int64(count),
 	})
 	if err != nil {
-		return fmt.Errorf("q.SaveStock: %w", err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23514" {
+			return domain.ErrInsufficientStock
+		}
+
+		return fmt.Errorf("q.DecreaseReserved: %w", err)
+
+	}
+
+	return nil
+}
+
+func (s *Storage) Reserve(ctx context.Context, skuID int, count int) error {
+	q := s.query(ctx)
+
+	affected, err := q.IncreaseReservedStock(ctx, sqlc.IncreaseReservedStockParams{
+		Count: int64(count),
+		SkuID: int64(skuID),
+	})
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23514" {
+			return domain.ErrInsufficientStock
+		}
+
+		return fmt.Errorf("q.IncreaseReservedStock: %w", err)
+
+	}
+	if affected == 0 {
+		return domain.ErrSkuNotFound
+	}
+
+	return nil
+}
+
+func (s *Storage) DecreaseReserveAndTotalCount(ctx context.Context, skuID int, count int) error {
+	q := s.query(ctx)
+
+	err := q.DecreaseReserveAndTotalCountStock(ctx, sqlc.DecreaseReserveAndTotalCountStockParams{
+		Count: int64(count),
+		SkuID: int64(skuID),
+	})
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23514" {
+			return domain.ErrInsufficientStock
+		}
+
+		return fmt.Errorf("q.IncreaseReservedStock: %w", err)
+
 	}
 
 	return nil

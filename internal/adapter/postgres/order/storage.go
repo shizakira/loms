@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/shizakira/loms/internal/adapter/postgres/order/sqlc"
 	"github.com/shizakira/loms/internal/domain"
 	"github.com/shizakira/loms/pkg/transaction"
@@ -23,36 +24,46 @@ func (s *Storage) query(ctx context.Context) *sqlc.Queries {
 	return sqlc.New(db)
 }
 
-func (s *Storage) Create(ctx context.Context, order domain.Order) (domain.Order, error) {
+func (s *Storage) Create(ctx context.Context, order domain.Order) (int, error) {
 	q := s.query(ctx)
 
-	created, err := q.CreateOrder(ctx, sqlc.CreateOrderParams{
+	orderID, err := q.CreateOrder(ctx, sqlc.CreateOrderParams{
 		Status: sqlc.OrderStatus(order.Status),
 		UserID: int64(order.User),
 	})
 	if err != nil {
-		return domain.Order{}, fmt.Errorf("q.CreateOrder: %w", err)
+		return 0, fmt.Errorf("q.CreateOrder: %w", err)
 	}
 
 	for _, item := range order.Items {
 		err = q.CreateOrderItem(ctx, sqlc.CreateOrderItemParams{
-			OrderID: created.ID,
+			OrderID: orderID,
 			Sku:     int64(item.Sku),
 			Count:   int16(item.Count),
 		})
 		if err != nil {
-			return domain.Order{}, fmt.Errorf("q.CreateOrderItem sku=%d: %w", item.Sku, err)
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == "23514" {
+				return 0, domain.ErrInsufficientStock
+			}
+
+			return 0, fmt.Errorf("q.CreateOrderItem sku=%d: %w", item.Sku, err)
 		}
 	}
 
-	order.ID = int(created.ID)
-	return order, nil
+	return int(orderID), nil
 }
 
-func (s *Storage) GetByID(ctx context.Context, orderID int) (domain.Order, error) {
+func (s *Storage) GetByID(ctx context.Context, orderID int, pessimistic bool) (domain.Order, error) {
 	q := s.query(ctx)
 
-	row, err := q.GetOrderByID(ctx, int64(orderID))
+	var row sqlc.Order
+	var err error
+	if pessimistic {
+		row, err = q.GetOrderByIDForUpdate(ctx, int64(orderID))
+	} else {
+		row, err = q.GetOrderByID(ctx, int64(orderID))
+	}
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.Order{}, domain.ErrOrderNotFound
@@ -68,8 +79,8 @@ func (s *Storage) GetByID(ctx context.Context, orderID int) (domain.Order, error
 	items := make([]domain.OrderItem, 0, len(itemRows))
 	for _, item := range itemRows {
 		items = append(items, domain.OrderItem{
-			Sku:   uint32(item.Sku),
-			Count: uint16(item.Count),
+			Sku:   int(item.Sku),
+			Count: int(item.Count),
 		})
 	}
 
@@ -81,12 +92,12 @@ func (s *Storage) GetByID(ctx context.Context, orderID int) (domain.Order, error
 	}, nil
 }
 
-func (s *Storage) Save(ctx context.Context, order domain.Order) error {
+func (s *Storage) UpdateStatus(ctx context.Context, orderID int, status domain.OrderStatus) error {
 	q := s.query(ctx)
 
-	err := q.SaveOrder(ctx, sqlc.SaveOrderParams{
-		ID:     int64(order.ID),
-		Status: sqlc.OrderStatus(order.Status),
+	err := q.UpdateOrderStatus(ctx, sqlc.UpdateOrderStatusParams{
+		ID:     int64(orderID),
+		Status: sqlc.OrderStatus(status),
 	})
 	if err != nil {
 		return fmt.Errorf("q.SaveOrder: %w", err)

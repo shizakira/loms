@@ -9,7 +9,7 @@ import (
 
 func (h Handlers) StocksInfo(ctx context.Context, req *pb.StocksInfoRequest) (*pb.StocksInfoResponse, error) {
 	input := dto.GetStockInfoInput{
-		Sku: req.GetSku(),
+		Sku: int(req.GetSku()),
 	}
 
 	stock, err := h.usecase.GetStockInfo(ctx, input)

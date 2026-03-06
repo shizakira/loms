@@ -11,39 +11,35 @@ import (
 
 func (l *Loms) CreateOrder(ctx context.Context, input dto.CreateOrderInput) (dto.CreateOrderOutput, error) {
 	items := l.aggregateItems(input.Items)
-	skuIDs := make([]uint32, 0, len(input.Items))
-	for _, item := range items {
-		skuIDs = append(skuIDs, item.Sku)
-	}
 
-	order := domain.Order{
+	newOrder := domain.Order{
 		Status: domain.StatusNew,
 		User:   input.User,
 		Items:  items,
 	}
 
-	order, err := l.orderStorage.Create(ctx, order)
+	orderID, err := l.orderStorage.Create(ctx, newOrder)
 	if err != nil {
 		return dto.CreateOrderOutput{}, fmt.Errorf("orderStorage.Create: %w", err)
 	}
 
 	err = transaction.Wrap(ctx, func(ctx context.Context) error {
-		stocks, err := l.stockStorage.GetBySkuIDs(ctx, skuIDs)
+		order, err := l.orderStorage.GetByID(ctx, orderID, true)
 		if err != nil {
-			return fmt.Errorf("stockStorage.GetBySkuIDs: %w", err)
+			return fmt.Errorf("orderStorage.GetByID: %w", err)
 		}
 
-		if err = l.reserveStocks(ctx, items, stocks); err != nil {
-			order.Status = domain.StatusFailed
-			if err := l.orderStorage.Save(ctx, order); err != nil {
-				return fmt.Errorf("orderStorage.Save: %w", err)
+		for _, item := range order.Items {
+			if err := l.stockStorage.Reserve(ctx, item.Sku, item.Count); err != nil {
+				if err := l.orderStorage.UpdateStatus(ctx, orderID, domain.StatusFailed); err != nil {
+					return fmt.Errorf("orderStorage.Save: %w", err)
+				}
+
+				return fmt.Errorf("stockStorage.Reserve: %w", err)
 			}
-
-			return fmt.Errorf("usecase.reserveStocks: %w", err)
 		}
 
-		order.Status = domain.StatusAwaitingPayment
-		if err := l.orderStorage.Save(ctx, order); err != nil {
+		if err := l.orderStorage.UpdateStatus(ctx, orderID, domain.StatusAwaitingPayment); err != nil {
 			return fmt.Errorf("orderStorage.Save: %w", err)
 		}
 
@@ -54,5 +50,23 @@ func (l *Loms) CreateOrder(ctx context.Context, input dto.CreateOrderInput) (dto
 		return dto.CreateOrderOutput{}, fmt.Errorf("transaction.Wrap: %w", err)
 	}
 
-	return dto.CreateOrderOutput{OrderID: order.ID}, nil
+	return dto.CreateOrderOutput{OrderID: orderID}, nil
+}
+
+func (l *Loms) aggregateItems(items []dto.OrderItem) []domain.OrderItem {
+	m := make(map[int]int, len(items))
+
+	for _, it := range items {
+		m[it.Sku] += it.Count
+	}
+
+	res := make([]domain.OrderItem, 0, len(m))
+	for sku, cnt := range m {
+		res = append(res, domain.OrderItem{
+			Sku:   sku,
+			Count: cnt,
+		})
+	}
+
+	return res
 }
