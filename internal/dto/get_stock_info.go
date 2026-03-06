@@ -1,7 +1,7 @@
 package dto
 
 type GetStockInfoInput struct {
-	Sku uint32
+	Sku int
 }
 
 type GetStockInfoOutput struct {

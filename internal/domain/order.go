@@ -11,8 +11,8 @@ const (
 )
 
 type OrderItem struct {
-	Sku   uint32 `json:"sku"`
-	Count uint16 `json:"count"`
+	Sku   int `json:"sku"`
+	Count int `json:"count"`
 }
 
 type Order struct {

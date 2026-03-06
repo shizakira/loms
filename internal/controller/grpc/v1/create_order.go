@@ -11,8 +11,8 @@ func (h Handlers) OrderCreate(ctx context.Context, req *pb.OrderCreateRequest) (
 	items := make([]dto.OrderItem, 0, len(req.GetItems()))
 	for _, item := range req.GetItems() {
 		items = append(items, dto.OrderItem{
-			Sku:   item.GetSku(),
-			Count: uint16(item.GetCount()),
+			Sku:   int(item.GetSku()),
+			Count: int(item.GetCount()),
 		})
 	}
 	input := dto.CreateOrderInput{
