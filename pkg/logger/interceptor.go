@@ -8,11 +8,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type ContextErrKey struct{}
+type contextErrKey struct{}
+
+func SetCtxErr(ctx context.Context, err error) {
+	ctxErr, ok := ctx.Value(contextErrKey{}).(*error)
+	if ok {
+		*ctxErr = err
+	}
+}
 
 func Interceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	var ctxErr error
-	ctx = context.WithValue(ctx, ContextErrKey{}, &ctxErr)
+	ctx = context.WithValue(ctx, contextErrKey{}, &ctxErr)
 
 	event := log.Info()
 

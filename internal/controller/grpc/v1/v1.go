@@ -23,10 +23,7 @@ func New(uc *usecase.Loms) *Handlers {
 }
 
 func GRPCError(ctx context.Context, err error) error {
-	ctxErr, ok := ctx.Value(logger.ContextErrKey{}).(*error)
-	if ok {
-		*ctxErr = err
-	}
+	logger.SetCtxErr(ctx, err)
 
 	var domainErr *domain.Error
 	if errors.As(err, &domainErr) {
