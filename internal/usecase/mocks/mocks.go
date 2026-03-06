@@ -39,22 +39,22 @@ func (_m *OrderStorage) EXPECT() *OrderStorage_Expecter {
 }
 
 // Create provides a mock function for the type OrderStorage
-func (_mock *OrderStorage) Create(ctx context.Context, order domain.Order) (domain.Order, error) {
+func (_mock *OrderStorage) Create(ctx context.Context, order domain.Order) (int, error) {
 	ret := _mock.Called(ctx, order)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
 	}
 
-	var r0 domain.Order
+	var r0 int
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Order) (domain.Order, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Order) (int, error)); ok {
 		return returnFunc(ctx, order)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Order) domain.Order); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Order) int); ok {
 		r0 = returnFunc(ctx, order)
 	} else {
-		r0 = ret.Get(0).(domain.Order)
+		r0 = ret.Get(0).(int)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.Order) error); ok {
 		r1 = returnFunc(ctx, order)
@@ -83,19 +83,19 @@ func (_c *OrderStorage_Create_Call) Run(run func(ctx context.Context, order doma
 	return _c
 }
 
-func (_c *OrderStorage_Create_Call) Return(order1 domain.Order, err error) *OrderStorage_Create_Call {
-	_c.Call.Return(order1, err)
+func (_c *OrderStorage_Create_Call) Return(n int, err error) *OrderStorage_Create_Call {
+	_c.Call.Return(n, err)
 	return _c
 }
 
-func (_c *OrderStorage_Create_Call) RunAndReturn(run func(ctx context.Context, order domain.Order) (domain.Order, error)) *OrderStorage_Create_Call {
+func (_c *OrderStorage_Create_Call) RunAndReturn(run func(ctx context.Context, order domain.Order) (int, error)) *OrderStorage_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetByID provides a mock function for the type OrderStorage
-func (_mock *OrderStorage) GetByID(ctx context.Context, orderID int) (domain.Order, error) {
-	ret := _mock.Called(ctx, orderID)
+func (_mock *OrderStorage) GetByID(ctx context.Context, orderID int, pessimistic bool) (domain.Order, error) {
+	ret := _mock.Called(ctx, orderID, pessimistic)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByID")
@@ -103,16 +103,16 @@ func (_mock *OrderStorage) GetByID(ctx context.Context, orderID int) (domain.Ord
 
 	var r0 domain.Order
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int) (domain.Order, error)); ok {
-		return returnFunc(ctx, orderID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, bool) (domain.Order, error)); ok {
+		return returnFunc(ctx, orderID, pessimistic)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int) domain.Order); ok {
-		r0 = returnFunc(ctx, orderID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, bool) domain.Order); ok {
+		r0 = returnFunc(ctx, orderID, pessimistic)
 	} else {
 		r0 = ret.Get(0).(domain.Order)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = returnFunc(ctx, orderID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = returnFunc(ctx, orderID, pessimistic)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -127,13 +127,14 @@ type OrderStorage_GetByID_Call struct {
 // GetByID is a helper method to define mock.On call
 //   - ctx
 //   - orderID
-func (_e *OrderStorage_Expecter) GetByID(ctx interface{}, orderID interface{}) *OrderStorage_GetByID_Call {
-	return &OrderStorage_GetByID_Call{Call: _e.mock.On("GetByID", ctx, orderID)}
+//   - pessimistic
+func (_e *OrderStorage_Expecter) GetByID(ctx interface{}, orderID interface{}, pessimistic interface{}) *OrderStorage_GetByID_Call {
+	return &OrderStorage_GetByID_Call{Call: _e.mock.On("GetByID", ctx, orderID, pessimistic)}
 }
 
-func (_c *OrderStorage_GetByID_Call) Run(run func(ctx context.Context, orderID int)) *OrderStorage_GetByID_Call {
+func (_c *OrderStorage_GetByID_Call) Run(run func(ctx context.Context, orderID int, pessimistic bool)) *OrderStorage_GetByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int))
+		run(args[0].(context.Context), args[1].(int), args[2].(bool))
 	})
 	return _c
 }
@@ -143,53 +144,54 @@ func (_c *OrderStorage_GetByID_Call) Return(order domain.Order, err error) *Orde
 	return _c
 }
 
-func (_c *OrderStorage_GetByID_Call) RunAndReturn(run func(ctx context.Context, orderID int) (domain.Order, error)) *OrderStorage_GetByID_Call {
+func (_c *OrderStorage_GetByID_Call) RunAndReturn(run func(ctx context.Context, orderID int, pessimistic bool) (domain.Order, error)) *OrderStorage_GetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Save provides a mock function for the type OrderStorage
-func (_mock *OrderStorage) Save(ctx context.Context, order domain.Order) error {
-	ret := _mock.Called(ctx, order)
+// UpdateStatus provides a mock function for the type OrderStorage
+func (_mock *OrderStorage) UpdateStatus(ctx context.Context, orderID int, status domain.OrderStatus) error {
+	ret := _mock.Called(ctx, orderID, status)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Save")
+		panic("no return value specified for UpdateStatus")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Order) error); ok {
-		r0 = returnFunc(ctx, order)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, domain.OrderStatus) error); ok {
+		r0 = returnFunc(ctx, orderID, status)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// OrderStorage_Save_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Save'
-type OrderStorage_Save_Call struct {
+// OrderStorage_UpdateStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateStatus'
+type OrderStorage_UpdateStatus_Call struct {
 	*mock.Call
 }
 
-// Save is a helper method to define mock.On call
+// UpdateStatus is a helper method to define mock.On call
 //   - ctx
-//   - order
-func (_e *OrderStorage_Expecter) Save(ctx interface{}, order interface{}) *OrderStorage_Save_Call {
-	return &OrderStorage_Save_Call{Call: _e.mock.On("Save", ctx, order)}
+//   - orderID
+//   - status
+func (_e *OrderStorage_Expecter) UpdateStatus(ctx interface{}, orderID interface{}, status interface{}) *OrderStorage_UpdateStatus_Call {
+	return &OrderStorage_UpdateStatus_Call{Call: _e.mock.On("UpdateStatus", ctx, orderID, status)}
 }
 
-func (_c *OrderStorage_Save_Call) Run(run func(ctx context.Context, order domain.Order)) *OrderStorage_Save_Call {
+func (_c *OrderStorage_UpdateStatus_Call) Run(run func(ctx context.Context, orderID int, status domain.OrderStatus)) *OrderStorage_UpdateStatus_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(domain.Order))
+		run(args[0].(context.Context), args[1].(int), args[2].(domain.OrderStatus))
 	})
 	return _c
 }
 
-func (_c *OrderStorage_Save_Call) Return(err error) *OrderStorage_Save_Call {
+func (_c *OrderStorage_UpdateStatus_Call) Return(err error) *OrderStorage_UpdateStatus_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *OrderStorage_Save_Call) RunAndReturn(run func(ctx context.Context, order domain.Order) error) *OrderStorage_Save_Call {
+func (_c *OrderStorage_UpdateStatus_Call) RunAndReturn(run func(ctx context.Context, orderID int, status domain.OrderStatus) error) *OrderStorage_UpdateStatus_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -221,9 +223,103 @@ func (_m *StockStorage) EXPECT() *StockStorage_Expecter {
 	return &StockStorage_Expecter{mock: &_m.Mock}
 }
 
+// DecreaseReserveAndTotalCount provides a mock function for the type StockStorage
+func (_mock *StockStorage) DecreaseReserveAndTotalCount(ctx context.Context, skuID int, count int) error {
+	ret := _mock.Called(ctx, skuID, count)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DecreaseReserveAndTotalCount")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = returnFunc(ctx, skuID, count)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// StockStorage_DecreaseReserveAndTotalCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DecreaseReserveAndTotalCount'
+type StockStorage_DecreaseReserveAndTotalCount_Call struct {
+	*mock.Call
+}
+
+// DecreaseReserveAndTotalCount is a helper method to define mock.On call
+//   - ctx
+//   - skuID
+//   - count
+func (_e *StockStorage_Expecter) DecreaseReserveAndTotalCount(ctx interface{}, skuID interface{}, count interface{}) *StockStorage_DecreaseReserveAndTotalCount_Call {
+	return &StockStorage_DecreaseReserveAndTotalCount_Call{Call: _e.mock.On("DecreaseReserveAndTotalCount", ctx, skuID, count)}
+}
+
+func (_c *StockStorage_DecreaseReserveAndTotalCount_Call) Run(run func(ctx context.Context, skuID int, count int)) *StockStorage_DecreaseReserveAndTotalCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *StockStorage_DecreaseReserveAndTotalCount_Call) Return(err error) *StockStorage_DecreaseReserveAndTotalCount_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *StockStorage_DecreaseReserveAndTotalCount_Call) RunAndReturn(run func(ctx context.Context, skuID int, count int) error) *StockStorage_DecreaseReserveAndTotalCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DecreaseReserved provides a mock function for the type StockStorage
+func (_mock *StockStorage) DecreaseReserved(ctx context.Context, skuID int, count int) error {
+	ret := _mock.Called(ctx, skuID, count)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DecreaseReserved")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = returnFunc(ctx, skuID, count)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// StockStorage_DecreaseReserved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DecreaseReserved'
+type StockStorage_DecreaseReserved_Call struct {
+	*mock.Call
+}
+
+// DecreaseReserved is a helper method to define mock.On call
+//   - ctx
+//   - skuID
+//   - count
+func (_e *StockStorage_Expecter) DecreaseReserved(ctx interface{}, skuID interface{}, count interface{}) *StockStorage_DecreaseReserved_Call {
+	return &StockStorage_DecreaseReserved_Call{Call: _e.mock.On("DecreaseReserved", ctx, skuID, count)}
+}
+
+func (_c *StockStorage_DecreaseReserved_Call) Run(run func(ctx context.Context, skuID int, count int)) *StockStorage_DecreaseReserved_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *StockStorage_DecreaseReserved_Call) Return(err error) *StockStorage_DecreaseReserved_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *StockStorage_DecreaseReserved_Call) RunAndReturn(run func(ctx context.Context, skuID int, count int) error) *StockStorage_DecreaseReserved_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetBySkuID provides a mock function for the type StockStorage
-func (_mock *StockStorage) GetBySkuID(ctx context.Context, skus uint32) (domain.Stock, error) {
-	ret := _mock.Called(ctx, skus)
+func (_mock *StockStorage) GetBySkuID(ctx context.Context, sku int) (domain.Stock, error) {
+	ret := _mock.Called(ctx, sku)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetBySkuID")
@@ -231,16 +327,16 @@ func (_mock *StockStorage) GetBySkuID(ctx context.Context, skus uint32) (domain.
 
 	var r0 domain.Stock
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uint32) (domain.Stock, error)); ok {
-		return returnFunc(ctx, skus)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) (domain.Stock, error)); ok {
+		return returnFunc(ctx, sku)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uint32) domain.Stock); ok {
-		r0 = returnFunc(ctx, skus)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) domain.Stock); ok {
+		r0 = returnFunc(ctx, sku)
 	} else {
 		r0 = ret.Get(0).(domain.Stock)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uint32) error); ok {
-		r1 = returnFunc(ctx, skus)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = returnFunc(ctx, sku)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -254,14 +350,14 @@ type StockStorage_GetBySkuID_Call struct {
 
 // GetBySkuID is a helper method to define mock.On call
 //   - ctx
-//   - skus
-func (_e *StockStorage_Expecter) GetBySkuID(ctx interface{}, skus interface{}) *StockStorage_GetBySkuID_Call {
-	return &StockStorage_GetBySkuID_Call{Call: _e.mock.On("GetBySkuID", ctx, skus)}
+//   - sku
+func (_e *StockStorage_Expecter) GetBySkuID(ctx interface{}, sku interface{}) *StockStorage_GetBySkuID_Call {
+	return &StockStorage_GetBySkuID_Call{Call: _e.mock.On("GetBySkuID", ctx, sku)}
 }
 
-func (_c *StockStorage_GetBySkuID_Call) Run(run func(ctx context.Context, skus uint32)) *StockStorage_GetBySkuID_Call {
+func (_c *StockStorage_GetBySkuID_Call) Run(run func(ctx context.Context, sku int)) *StockStorage_GetBySkuID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uint32))
+		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
@@ -271,110 +367,54 @@ func (_c *StockStorage_GetBySkuID_Call) Return(stock domain.Stock, err error) *S
 	return _c
 }
 
-func (_c *StockStorage_GetBySkuID_Call) RunAndReturn(run func(ctx context.Context, skus uint32) (domain.Stock, error)) *StockStorage_GetBySkuID_Call {
+func (_c *StockStorage_GetBySkuID_Call) RunAndReturn(run func(ctx context.Context, sku int) (domain.Stock, error)) *StockStorage_GetBySkuID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetBySkuIDs provides a mock function for the type StockStorage
-func (_mock *StockStorage) GetBySkuIDs(ctx context.Context, skus []uint32) ([]domain.Stock, error) {
-	ret := _mock.Called(ctx, skus)
+// Reserve provides a mock function for the type StockStorage
+func (_mock *StockStorage) Reserve(ctx context.Context, skuID int, count int) error {
+	ret := _mock.Called(ctx, skuID, count)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetBySkuIDs")
-	}
-
-	var r0 []domain.Stock
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uint32) ([]domain.Stock, error)); ok {
-		return returnFunc(ctx, skus)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uint32) []domain.Stock); ok {
-		r0 = returnFunc(ctx, skus)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.Stock)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uint32) error); ok {
-		r1 = returnFunc(ctx, skus)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// StockStorage_GetBySkuIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBySkuIDs'
-type StockStorage_GetBySkuIDs_Call struct {
-	*mock.Call
-}
-
-// GetBySkuIDs is a helper method to define mock.On call
-//   - ctx
-//   - skus
-func (_e *StockStorage_Expecter) GetBySkuIDs(ctx interface{}, skus interface{}) *StockStorage_GetBySkuIDs_Call {
-	return &StockStorage_GetBySkuIDs_Call{Call: _e.mock.On("GetBySkuIDs", ctx, skus)}
-}
-
-func (_c *StockStorage_GetBySkuIDs_Call) Run(run func(ctx context.Context, skus []uint32)) *StockStorage_GetBySkuIDs_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].([]uint32))
-	})
-	return _c
-}
-
-func (_c *StockStorage_GetBySkuIDs_Call) Return(stocks []domain.Stock, err error) *StockStorage_GetBySkuIDs_Call {
-	_c.Call.Return(stocks, err)
-	return _c
-}
-
-func (_c *StockStorage_GetBySkuIDs_Call) RunAndReturn(run func(ctx context.Context, skus []uint32) ([]domain.Stock, error)) *StockStorage_GetBySkuIDs_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// Save provides a mock function for the type StockStorage
-func (_mock *StockStorage) Save(ctx context.Context, stock domain.Stock) error {
-	ret := _mock.Called(ctx, stock)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Save")
+		panic("no return value specified for Reserve")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Stock) error); ok {
-		r0 = returnFunc(ctx, stock)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = returnFunc(ctx, skuID, count)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// StockStorage_Save_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Save'
-type StockStorage_Save_Call struct {
+// StockStorage_Reserve_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Reserve'
+type StockStorage_Reserve_Call struct {
 	*mock.Call
 }
 
-// Save is a helper method to define mock.On call
+// Reserve is a helper method to define mock.On call
 //   - ctx
-//   - stock
-func (_e *StockStorage_Expecter) Save(ctx interface{}, stock interface{}) *StockStorage_Save_Call {
-	return &StockStorage_Save_Call{Call: _e.mock.On("Save", ctx, stock)}
+//   - skuID
+//   - count
+func (_e *StockStorage_Expecter) Reserve(ctx interface{}, skuID interface{}, count interface{}) *StockStorage_Reserve_Call {
+	return &StockStorage_Reserve_Call{Call: _e.mock.On("Reserve", ctx, skuID, count)}
 }
 
-func (_c *StockStorage_Save_Call) Run(run func(ctx context.Context, stock domain.Stock)) *StockStorage_Save_Call {
+func (_c *StockStorage_Reserve_Call) Run(run func(ctx context.Context, skuID int, count int)) *StockStorage_Reserve_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(domain.Stock))
+		run(args[0].(context.Context), args[1].(int), args[2].(int))
 	})
 	return _c
 }
 
-func (_c *StockStorage_Save_Call) Return(err error) *StockStorage_Save_Call {
+func (_c *StockStorage_Reserve_Call) Return(err error) *StockStorage_Reserve_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *StockStorage_Save_Call) RunAndReturn(run func(ctx context.Context, stock domain.Stock) error) *StockStorage_Save_Call {
+func (_c *StockStorage_Reserve_Call) RunAndReturn(run func(ctx context.Context, skuID int, count int) error) *StockStorage_Reserve_Call {
 	_c.Call.Return(run)
 	return _c
 }
