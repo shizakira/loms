@@ -1,8 +1,8 @@
 package dto
 
 type OrderItem struct {
-	Sku   uint32
-	Count uint16
+	Sku   int
+	Count int
 }
 
 type CreateOrderInput struct {
