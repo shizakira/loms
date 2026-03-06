@@ -4,7 +4,7 @@ CREATE TYPE order_status AS ENUM (
     'failed',
     'payed',
     'cancelled'
-);
+    );
 
 CREATE TABLE orders
 (
@@ -17,6 +17,6 @@ CREATE TABLE order_items
 (
     order_id BIGINT   NOT NULL REFERENCES orders (id),
     sku      BIGINT   NOT NULL,
-    count    SMALLINT NOT NULL,
+    count    SMALLINT NOT NULL CHECK ( count > 0),
     PRIMARY KEY (order_id, sku)
 );
