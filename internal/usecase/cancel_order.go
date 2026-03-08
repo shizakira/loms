@@ -27,7 +27,15 @@ func (l *Loms) CancelOrder(ctx context.Context, input dto.CancelOrderInput) erro
 		}
 
 		if err := l.orderStorage.UpdateStatus(ctx, input.OrderID, domain.StatusCancelled); err != nil {
-			return fmt.Errorf("orderStorage.Save: %w", err)
+			return fmt.Errorf("orderStorage.UpdateStatus: %w", err)
+		}
+		event, err := domain.NewOrderEvent(order.ID, domain.StatusCancelled)
+		if err != nil {
+			return fmt.Errorf("domain.NewOrderEvent: %w", err)
+		}
+
+		if err = l.outboxStorage.CreateEvent(ctx, event); err != nil {
+			return fmt.Errorf("outboxStorage.CreateEvent: %w", err)
 		}
 
 		return nil

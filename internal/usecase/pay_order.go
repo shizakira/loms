@@ -22,12 +22,21 @@ func (l *Loms) PayOrder(ctx context.Context, input dto.PayOrderInput) error {
 
 		for _, item := range order.Items {
 			if err := l.stockStorage.DecreaseReserveAndTotalCount(ctx, item.Sku, item.Count); err != nil {
-				return fmt.Errorf("stockStorage.DecreaseReserved: %w", err)
+				return fmt.Errorf("stockStorage.DecreaseReserveAndTotalCount: %w", err)
 			}
 		}
 
 		if err := l.orderStorage.UpdateStatus(ctx, order.ID, domain.StatusPayed); err != nil {
 			return fmt.Errorf("orderStorage.Save: %w", err)
+		}
+
+		event, err := domain.NewOrderEvent(order.ID, domain.StatusPayed)
+		if err != nil {
+			return fmt.Errorf("domain.NewOrderEvent: %w", err)
+		}
+
+		if err = l.outboxStorage.CreateEvent(ctx, event); err != nil {
+			return fmt.Errorf("outboxStorage.CreateEvent: %w", err)
 		}
 
 		return nil
