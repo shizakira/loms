@@ -100,7 +100,7 @@ func (s *Storage) UpdateStatus(ctx context.Context, orderID int, status domain.O
 		Status: sqlc.OrderStatus(status),
 	})
 	if err != nil {
-		return fmt.Errorf("q.SaveOrder: %w", err)
+		return fmt.Errorf("q.UpdateStatus: %w", err)
 	}
 
 	return nil

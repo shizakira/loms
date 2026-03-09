@@ -5,7 +5,9 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/shizakira/loms/internal/adapter/kafka_producer"
 	"github.com/shizakira/loms/internal/controller/http_gateway"
+	"github.com/shizakira/loms/internal/controller/worker"
 	"github.com/shizakira/loms/pkg/logger"
 
 	"github.com/shizakira/loms/internal/controller/grpc"
@@ -17,11 +19,13 @@ type App struct {
 	Version string `envconfig:"APP_VERSION" required:"true"`
 }
 type Config struct {
-	App      App
-	Postgres postgres.Config
-	Logger   logger.Config
-	GRPC     grpc.Config
-	HTTP     http_gateway.Config
+	App           App
+	Postgres      postgres.Config
+	Logger        logger.Config
+	GRPC          grpc.Config
+	HTTP          http_gateway.Config
+	KafkaProducer kafka_producer.Config
+	OutboxKafka   worker.OutboxKafkaConfig
 }
 
 func New() (Config, error) {

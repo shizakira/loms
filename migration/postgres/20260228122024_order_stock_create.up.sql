@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TYPE order_status AS ENUM (
     'new',
     'awaiting_payment',
@@ -33,3 +35,5 @@ INSERT INTO stocks (sku_id, total_count, reserved)
 VALUES (1076963, 100, 0),
        (1148162, 50, 0),
        (1625903, 200, 0);
+
+COMMIT;

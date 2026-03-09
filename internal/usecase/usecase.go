@@ -20,11 +20,32 @@ type StockStorage interface {
 	Reserve(ctx context.Context, skuID int, count int) error
 }
 
-type Loms struct {
-	orderStorage OrderStorage
-	stockStorage StockStorage
+type OutboxStorage interface {
+	CreateEvent(ctx context.Context, events ...domain.Event) error
+	FetchMsgs(ctx context.Context, limit int) ([]domain.Event, error)
 }
 
-func New(orderStorage OrderStorage, stockStorage StockStorage) *Loms {
-	return &Loms{orderStorage: orderStorage, stockStorage: stockStorage}
+type Producer interface {
+	EmitEvents(ctx context.Context, events ...domain.Event) error
+}
+
+type Loms struct {
+	orderStorage  OrderStorage
+	stockStorage  StockStorage
+	outboxStorage OutboxStorage
+	producer      Producer
+}
+
+func New(
+	orderStorage OrderStorage,
+	stockStorage StockStorage,
+	outboxStorage OutboxStorage,
+	producer Producer,
+) *Loms {
+	return &Loms{
+		orderStorage:  orderStorage,
+		stockStorage:  stockStorage,
+		outboxStorage: outboxStorage,
+		producer:      producer,
+	}
 }
