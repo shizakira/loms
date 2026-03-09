@@ -27,6 +27,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    volumes:
+      - kafka1:/var/lib/kafka/data
 
   kafka-init:
     image: confluentinc/cp-kafka:latest
@@ -61,5 +63,10 @@ services:
     volumes:
       - loms_postgres_data:/var/lib/postgresql/data
 
+networks:
+  default:
+    name: shared_network
+
 volumes:
+  kafka1:
   loms_postgres_data:
